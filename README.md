@@ -1,4 +1,4 @@
-= Poor Man's PCF =
+=Poor Man's PCF=
 
 A simple implementation of Programming Computable Functions (simply-typed
 lambda calculus with Y-combinator, natural numbers and booleans) + pairs and
