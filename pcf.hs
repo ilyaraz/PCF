@@ -3,7 +3,8 @@ data Type =
     BoolType |
     ArrowType Type Type |
     PairType Type Type |
-    ListType Type
+    ListType Type |
+    UnitType
     deriving (Eq)
 
 instance Show Type where
@@ -12,6 +13,7 @@ instance Show Type where
     show (ArrowType t1 t2) = "(" ++ (show t1) ++ " -> " ++ (show t2) ++ ")"
     show (PairType t1 t2) = "(" ++ (show t1) ++ ", " ++ (show t2) ++ ")"
     show (ListType t) = "[" ++ (show t) ++ "]"
+    show UnitType = "Unit"
 
 data Term =
     TVar Int |
@@ -32,7 +34,8 @@ data Term =
     TCons Term Term |
     TIsNil Term |
     THead Term |
-    TTail Term
+    TTail Term |
+    TUnit
 
 isVal :: Term -> Bool
 isVal (TLambda _ _) = True
@@ -42,6 +45,7 @@ isVal TFalse = True
 isVal (TPair u v) = (isVal u) && (isVal v)
 isVal (TNil _) = True
 isVal (TCons u v) = (isVal u) && (isVal v)
+isVal TUnit = True
 isVal _ = False
 
 isNum :: Term -> Bool
@@ -91,6 +95,7 @@ instance Show Term where
     show (TIsNil u) = "(nil? " ++ (show u) ++ ")"
     show (THead u) = "(head " ++ (show u) ++ ")"
     show (TTail u) = "(tail " ++ (show u) ++ ")"
+    show TUnit = "Unit"
 
 typeOf :: Term -> [Type] -> Maybe Type
 typeOf (TVar x) ctx =
@@ -170,6 +175,7 @@ typeOf (TTail l) ctx = do
     case t1 of
         (ListType _) -> return t1
         _ -> Nothing
+typeOf TUnit ctx = Just UnitType
 
 incr :: Int -> Int -> Term -> Term
 incr d c (TVar x) = if (x < c) then (TVar x) else (TVar (x + d))
@@ -191,6 +197,7 @@ incr d c (TCons u v) = (TCons (incr d c u) (incr d c v))
 incr d c (TIsNil t1) = (TIsNil (incr d c t1))
 incr d c (THead t1) = (THead (incr d c t1))
 incr d c (TTail t1) = (TTail (incr d c t1))
+incr d c TUnit = TUnit
 
 subs :: Int -> Term -> Term -> Term
 subs j s (TVar k) = if (k == j) then s else (TVar k)
@@ -212,6 +219,7 @@ subs j s (TCons u v) = (TCons (subs j s u) (subs j s v))
 subs j s (TIsNil t1) = (TIsNil (subs j s t1))
 subs j s (THead t1) = (THead (subs j s t1))
 subs j s (TTail t1) = (TTail (subs j s t1))
+subs j s TUnit = TUnit
 
 eval :: Term -> Maybe Term
 eval t | isVal t = Nothing
