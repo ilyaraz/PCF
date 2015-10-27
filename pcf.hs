@@ -35,7 +35,8 @@ data Term =
     TIsNil Term |
     THead Term |
     TTail Term |
-    TUnit
+    TUnit |
+    TSeq Term Term
 
 isVal :: Term -> Bool
 isVal (TLambda _ _) = True
@@ -96,6 +97,7 @@ instance Show Term where
     show (THead u) = "(head " ++ (show u) ++ ")"
     show (TTail u) = "(tail " ++ (show u) ++ ")"
     show TUnit = "Unit"
+    show (TSeq t1 t2) = "(" ++ (show t1) ++ "; " ++ (show t2) ++ ")"
 
 typeOf :: Term -> [Type] -> Maybe Type
 typeOf (TVar x) ctx =
@@ -176,6 +178,12 @@ typeOf (TTail l) ctx = do
         (ListType _) -> return t1
         _ -> Nothing
 typeOf TUnit ctx = Just UnitType
+typeOf (TSeq u v) ctx = do
+    t1 <- typeOf u ctx
+    t2 <- typeOf v ctx
+    case t1 of
+        UnitType -> return t2
+        _ -> Nothing
 
 incr :: Int -> Int -> Term -> Term
 incr d c (TVar x) = if (x < c) then (TVar x) else (TVar (x + d))
@@ -290,6 +298,10 @@ eval (TTail (TCons u v)) | (isVal u) && (isVal v) = Just v
 eval (TTail u) = do
     t1 <- eval u
     return (TTail t1)
+eval (TSeq TUnit u) = Just u
+eval (TSeq u v) = do
+    t1 <- eval u
+    return (TSeq t1 v)
 
 evalIt :: Term -> IO()
 evalIt t = do
