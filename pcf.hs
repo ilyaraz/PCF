@@ -206,6 +206,7 @@ incr d c (TIsNil t1) = (TIsNil (incr d c t1))
 incr d c (THead t1) = (THead (incr d c t1))
 incr d c (TTail t1) = (TTail (incr d c t1))
 incr d c TUnit = TUnit
+incr d c (TSeq u v) = (TSeq (incr d c u) (incr d c v))
 
 subs :: Int -> Term -> Term -> Term
 subs j s (TVar k) = if (k == j) then s else (TVar k)
@@ -228,6 +229,7 @@ subs j s (TIsNil t1) = (TIsNil (subs j s t1))
 subs j s (THead t1) = (THead (subs j s t1))
 subs j s (TTail t1) = (TTail (subs j s t1))
 subs j s TUnit = TUnit
+subs j s (TSeq u v) = (TSeq (subs j s u) (subs j s v))
 
 eval :: Term -> Maybe Term
 eval t | isVal t = Nothing
@@ -361,10 +363,13 @@ lmap =
        (TAppl (TVar 1) (THead (TVar 0)))
        (TAppl (TAppl (TVar 2) (TVar 1)) (TTail (TVar 0)))))))))
 
-toEval :: Term
-toEval =
+fibList :: Term
+fibList =
     (TAppl (TAppl lmap fib) (intListToTerm [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
     11, 12, 13, 14, 15]))
+
+toEval :: Term
+toEval = (TAppl (TLambda NatType (TSeq TUnit TZero)) (TSeq TUnit TZero))
 
 main :: IO()
 main = do
