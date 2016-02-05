@@ -63,13 +63,12 @@ isList (TNil _) = True
 isList (TCons _ _) = True
 isList _ = False
 
-toListAux :: Term -> String
-toListAux (TNil _) = ""
-toListAux (TCons u (TNil _)) = (show u)
-toListAux (TCons u v) = (show u) ++ ", " ++ (toListAux v)
-
 toList :: Term -> String
-toList t = "[" ++ (toListAux t) ++ "]" 
+toList t =
+    "[" ++ (toListAux t) ++ "]"
+    where toListAux (TNil _) = ""
+          toListAux (TCons u (TNil _)) = (show u)
+          toListAux (TCons u v) = (show u) ++ ", " ++ (toListAux v)
 
 instance Show Term where
     show x | (isNum x) = show (toNum x)
@@ -365,15 +364,16 @@ lmap =
 
 fibList :: Term
 fibList =
-    (TAppl (TAppl lmap fib) (intListToTerm [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-    11, 12, 13, 14, 15]))
+    (TAppl (TAppl lmap fib) (intListToTerm [1..15]))
 
 toEval :: Term
-toEval = (TAppl (TLambda NatType (TSeq TUnit TZero)) (TSeq TUnit TZero))
+toEval = fibList
 
 main :: IO()
 main = do
-    print toEval
     t <- return (typeOf toEval [])
-    print t
-    if t == Nothing then return () else (evalIt toEval)
+    case t of
+         Just x -> do
+              print x
+              evalIt toEval
+         Nothing -> return ()
