@@ -371,9 +371,9 @@ toEval = fibList
 
 main :: IO()
 main = do
-    t <- return (typeOf toEval [])
-    case t of
-         Just x -> do
-              print x
-              evalIt toEval
-         Nothing -> return ()
+    let t = typeOf toEval [] in
+        case t of
+            Just x -> do
+                print x
+                evalIt toEval
+            Nothing -> return ()
